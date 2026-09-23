@@ -6,14 +6,13 @@ on:
 
 jobs:
   build:
-    # IMPORTANTE: Forziamo ubuntu-22.04. Buildozer fallisce regolarmente sulle versioni successive (24.04 / 26.04)
-    runs-on: ubuntu-22.04 
+    runs-on: ubuntu-22.04 # Manteniamo la 22.04 per massima stabilità di build con Android NDK
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Utilizzato per memorizzare nella cache le dipendenze con un timeout
+      # Ottiene la data per invalidare la cache giornalmente
       - name: Get Date
         id: get-date
         run: |
@@ -32,12 +31,13 @@ jobs:
           path: .buildozer
           key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
 
+      # FIX: Usiamo la versione aggiornata dell'action che corregge l'errore del container Docker
       - name: Compila con Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
+        uses: geof90/buildozer-action@v2
         id: buildozer
         with:
           command: buildozer android debug
-          buildozer_version: stable
+          repository_root: .
 
       - name: Carica artefatti
         uses: actions/upload-artifact@v4
