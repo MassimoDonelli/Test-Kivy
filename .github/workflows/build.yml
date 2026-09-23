@@ -45,9 +45,9 @@ jobs:
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:~/.local/bin
-          # Il flag -v (verbose) scavalca il file .spec e mostra l'errore esatto a schermo
+          # Accetta in automatico le licenze Android prima di compilare
           yes | buildozer -v android debug
-
+      
           export PATH=$PATH:~/.local/bin
           buildozer android debug
 
