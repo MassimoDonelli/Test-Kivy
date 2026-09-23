@@ -12,20 +12,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 1. Configura Python 3.11 (versione perfetta per Buildozer/Kivy)
+      # 1. Configura Python 3.11 (perfetto per Kivy)
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # 2. Configura Java 17 (obbligatorio per Gradle e Android)
+      # 2. Configura Java 17 (obbligatorio per Android)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      # 3. Installa le dipendenze di sistema Linux
+      # 3. Installa le dipendenze Linux necessarie
       - name: Install Buildozer dependencies
         run: |
           sudo apt update
@@ -35,16 +35,15 @@ jobs:
           pip3 install --upgrade pip
           pip3 install --user --upgrade Cython virtualenv buildozer
 
-      # 4. COMPILAZIONE DEFINITIVA: Forziamo una build totalmente pulita
+      # 4. COMPILAZIONE DIRETTISSIMA
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:~/.local/bin
-          # La variabile P4A_clean_builds=1 costringe il compilatore a spazzare via 
-          # qualsiasi residuo corrotto prima di iniziare, salvandoci dai crash nascosti.
+          # Diciamo a Buildozer di fare una build da zero senza toccare vecchi file corrotti
           export P4A_clean_builds=1
           yes | buildozer android debug
 
-      # 5. Salva l'APK generato
+      # 5. Salva l'APK finale
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
