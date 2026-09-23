@@ -47,14 +47,24 @@ jobs:
           path: ~/.buildozer
           key: buildozer-global-${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
 
-      # 4. Compilazione ottimizzata per evitare il troncamento dei log su GitHub
+      
+      # 4. Compilazione pulita con cattura totale dell'errore reale
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:~/.local/bin
-          # Eseguiamo in modalità standard (mostra solo avvisi e scarti importanti)
-          # ma reindirizziamo un log completo in un file in caso di crash
-          yes | buildozer android debug > buildozer_output.log 2>&1 || (tail -n 100 buildozer_output.log && exit 1)
-            # Salvataggio APK
+          
+          # Cancella vecchi residui di compilazione che potrebbero bloccare l'NDK
+          buildozer android clean
+          
+          # Avvia la build salvando i log dettagliati (log_level = 2)
+          yes | buildozer -v android debug > buildozer_output.log 2>&1 || (
+            echo "================================ ERRORE DI COMPILAZIONE ================================"
+            # Mostra le ultime 1000 righe per scavalcare l'elenco delle variabili d'ambiente
+            tail -n 1000 buildozer_output.log
+            exit 1
+          )
+      
+      # Salvataggio APK
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
