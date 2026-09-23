@@ -46,7 +46,7 @@ jobs:
         run: |
           export PATH=$PATH:~/.local/bin
           # Il flag -v (verbose) scavalca il file .spec e mostra l'errore esatto a schermo
-          buildozer -v android debug
+          yes | buildozer -v android debug
 
           export PATH=$PATH:~/.local/bin
           buildozer android debug
