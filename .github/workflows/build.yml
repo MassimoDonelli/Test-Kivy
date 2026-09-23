@@ -1,3 +1,4 @@
+
 name: CI
 
 on:
@@ -40,10 +41,13 @@ jobs:
         with:
           path: ~/.buildozer
           key: buildozer-global-${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
-
-      # 4. Compilazione nativa (Aggiunge automaticamente il path di pip all'ambiente)
+      # 4. Compilazione nativa con LOG DETTAGLIATI (Forziamo il verbose mode)
       - name: Build with Buildozer
         run: |
+          export PATH=$PATH:~/.local/bin
+          # Il flag -v (verbose) scavalca il file .spec e mostra l'errore esatto a schermo
+          buildozer -v android debug
+
           export PATH=$PATH:~/.local/bin
           buildozer android debug
 
