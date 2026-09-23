@@ -1,42 +1,43 @@
 name: CI
+
 on:
- push:
-  branches: [ main ]
+  push:
+    branches: [ main ]
 
 jobs:
- build:
-  runs-on: ubuntu-20.04
+  build:
+    runs-on: ubuntu-20.04
 
-steps:
-     uses: actions/checkout@v2
-  name: Get Date
-id: get-date    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-run: | 
-  echo "date=$(/bin/date -u +%Y%m%d)" >> $GITHUB_OUTPUT
+      - name: Get current date
+        id: get-date
+        run: |
+          echo "date=$(/bin/date -u +%Y%m%d)" >> $GITHUB_OUTPUT
 
-shell: bash
+      - name: Directory globale della cache di Buildozer
+        uses: actions/cache@v2
+        with:
+          path: .buildozer_global
+          key: buildozer-global-${{ hashFiles('buildozer.spec') }}
 
-name: Directory globale della cache di Buildozer
-uses: actions/cache@v2
-with:
-path: .buildozer_global
-key: buildozer-global-${{ hashFiles('buildozer.spec') }} # Sostituisci con il tuo percorso
+      - name: Cache locale Buildozer
+        uses: actions/cache@v2
+        with:
+          path: .buildozer
+          key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
 
-uses: actions/cache@v2
-with:
-path: .buildozer
-key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
+      - name: Compila con Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          command: buildozer android debug
+          buildozer_version: stable
 
-name: Compila con Buildozer
-uses: ArtemSBulgakov/buildozer-action@v1
-id: buildozer
-with:
-command: buildozer android debug
-buildozer_version: stable
-
-Nome: Carica artefatti
-Usa: actions/upload-artifact@v2
-Con:
-Nome: pacchetto
-Percorso: ${{ steps.buildozer.outputs.filename }}
+      - name: Carica artefatti
+        uses: actions/upload-artifact@v2
+        with:
+          name: pacchetto
+          path: ${{ steps.buildozer.outputs.filename }}
