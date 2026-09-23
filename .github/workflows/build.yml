@@ -6,35 +6,50 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04 # Manteniamo la 22.04 per massima stabilità di build con Android NDK
+    runs-on: ubuntu-22.04 # Versione stabile e consigliata per i requisiti Android NDK
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Ottiene la data per invalidare la cache giornalmente
+      # 1. Installazione di Java (indispensabile per Gradle e l'SDK Android)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 2. Installazione di tutte le dipendenze di sistema richieste da Buildozer
+      - name: Install Buildozer dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y git zip unzip patch textinfo libffi-dev libssl-dev \
+            autoconf libtool pkg-config zlib1g-dev libncurses5-dev \
+            libncursesw5-dev libtinfo5 cmake
+          pip3 install --upgrade pip
+          pip3 install --user --upgrade Cython virtualenv buildozer
+
+      # 3. Gestione della cache per velocizzare le build successive
       - name: Get Date
         id: get-date
-        run: |
-          echo "date=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+        run: echo "date=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
         shell: bash
 
-      - name: Directory globale della cache di Buildozer
+      - name: Cache Buildozer global
         uses: actions/cache@v4
         with:
-          path: .buildozer_global
-          key: buildozer-global-${{ hashFiles('buildozer.spec') }}
+          path: ~/.buildozer
+          key: buildozer-global-${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
 
-      - name: Cache locale Buildozer
-        uses: actions/cache@v4
-        with:
-          path: .buildozer
-          key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
+      # 4. Compilazione nativa (Aggiunge automaticamente il path di pip all'ambiente)
+      - name: Build with Buildozer
+        run: |
+          export PATH=$PATH:~/.local/bin
+          buildozer android debug
 
-      
-      - name: Compila con Buildozer
-        uses: geof90/buildozer-action@v2
-        id: buildozer
+      # 5. Caricamento dell'APK generato
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
         with:
-            command: buildozer android debug
-            repository_root: .
+          name: pacchetto-apk
+          path: bin/*.apk
