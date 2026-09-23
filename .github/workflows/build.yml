@@ -41,4 +41,31 @@ jobs:
         with:
           name: pacchetto
           path: ${{ steps.buildozer.outputs.filename }}
+          name: Fix Missing Newlines
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  fix-format:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Permette all'action di fare il push modificando il ramo della PR
+          ref: ${{ github.head_ref }}
+
+      - name: Add missing newline to build.yml
+        run: |
+          # Aggiunge un newline alla fine solo se manca
+          sed -i -e '$a\' .github/workflows/build.yml
+
+      - name: Commit and Push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style: add missing newline at end of build.yml (#6)"
+          file_pattern: '.github/workflows/build.yml'
+
 
