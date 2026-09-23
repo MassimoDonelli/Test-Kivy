@@ -6,25 +6,27 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest # Aggiornato a ubuntu-latest per maggiore compatibilità
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Get current date
+      # Utilizzato per memorizzare nella cache le dipendenze con un timeout
+      - name: Get Date
         id: get-date
         run: |
-          echo "date=$(/bin/date -u +%Y%m%d)" >> $GITHUB_OUTPUT
+          echo "date=$(/bin/date -u '+%Y%m%d')" >> $GITHUB_OUTPUT
+        shell: bash
 
       - name: Directory globale della cache di Buildozer
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: .buildozer_global
           key: buildozer-global-${{ hashFiles('buildozer.spec') }}
 
       - name: Cache locale Buildozer
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: .buildozer
           key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
@@ -37,35 +39,7 @@ jobs:
           buildozer_version: stable
 
       - name: Carica artefatti
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: pacchetto
           path: ${{ steps.buildozer.outputs.filename }}
-          name: Fix Missing Newlines
-
-on:
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  fix-format:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          # Permette all'action di fare il push modificando il ramo della PR
-          ref: ${{ github.head_ref }}
-
-      - name: Add missing newline to build.yml
-        run: |
-          # Aggiunge un newline alla fine solo se manca
-          sed -i -e '$a\' .github/workflows/build.yml
-
-      - name: Commit and Push changes
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "style: add missing newline at end of build.yml (#6)"
-          file_pattern: '.github/workflows/build.yml'
-
-
