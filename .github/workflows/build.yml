@@ -1,45 +1,7 @@
-name: Build Android APK
+requirements = python3==3.11.9, kivy
+android.api = 33
+android.minapi = 21
+android.ndk = 25c
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-22.04
-
-    steps:
-      - name: Checkout del codice
-        uses: actions/checkout@v4
-
-      - name: Configura Python di sistema
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Configura Java (JDK 17)
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Installa le dipendenze di sistema e Buildozer
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ccache automake libltdl-dev libffi-dev libssl-dev autoconf autotools-dev libtool pkg-config zlib1g-dev python3-pip openjdk-17-jdk
-          pip3 install --upgrade pip
-          pip3 install "buildozer>=1.5.0" "cython<3.0.0" kivy
-
-      - name: Compilazione APK con Buildozer
-        run: |
-          # Avvia direttamente la compilazione e accetta le licenze SDK
-          yes | buildozer android debug
-
-      - name: Caricamento dell'APK come Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: pacchetto-apk
-          path: bin/*.apk
+# Lascia solo questa architettura per velocizzare la build di test ed evitare conflitti
+android.archs = arm64-v8a
