@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Configura Java (Necessario per Gradle)
+      - name: Configura Java (JDK 17)
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -33,11 +33,9 @@ jobs:
           pip3 install --upgrade pip
           pip3 install "buildozer>=1.5.0" "cython<3.0.0" kivy
 
-      - name: Pulizia e Compilazione APK
+      - name: Compilazione APK con Buildozer
         run: |
-          # Forza la pulizia di vecchi residui distruttivi
-          buildozer android clean
-          # Avvia la compilazione accettando le licenze SDK
+          # Avvia direttamente la compilazione e accetta le licenze SDK
           yes | buildozer android debug
 
       - name: Caricamento dell'APK come Artifact
