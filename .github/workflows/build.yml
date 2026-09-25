@@ -15,30 +15,29 @@ jobs:
       - name: Checkout del codice
         uses: actions/checkout@v4
 
-      - name: Configura Python
+      - name: Configura Python di sistema
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
+
+      - name: Configura Java (Necessario per Gradle)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
       - name: Installa le dipendenze di sistema e Buildozer
         run: |
           sudo apt-get update
-          sudo apt-get install -y ccache automake libltdl-dev libffi-dev libssl-dev autoconf autotools-dev libtool pkg-config zlib1g-dev python3-pip
+          sudo apt-get install -y ccache automake libltdl-dev libffi-dev libssl-dev autoconf autotools-dev libtool pkg-config zlib1g-dev python3-pip openjdk-17-jdk
           pip3 install --upgrade pip
-          pip3 install buildozer cython kivy
+          pip3 install "buildozer>=1.5.0" "cython<3.0.0" kivy
 
-      - name: Gestione Cache (Ottimizza i build successivi)
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.ccache
-            ~/.buildozer
-          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
-          restore-keys: |
-            ${{ runner.os }}-buildozer-
-
-      - name: Compilazione APK con Buildozer
+      - name: Pulizia e Compilazione APK
         run: |
+          # Forza la pulizia di vecchi residui distruttivi
+          buildozer android clean
+          # Avvia la compilazione accettando le licenze SDK
           yes | buildozer android debug
 
       - name: Caricamento dell'APK come Artifact
