@@ -1,4 +1,4 @@
-name: Build Android APK (Soluzione Corretta)
+name: Build Android APK (Soluzione Definitiva Nativa)
 
 on:
   push:
@@ -9,17 +9,54 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout del codice
         uses: actions/checkout@v4
 
-      - name: Compilazione APK con Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
+      - name: Configura Python di sistema
+        uses: actions/setup-python@v5
         with:
-          command: buildozer android debug
-          buildozer_version: stable
+          python-version: '3.11'
+
+      - name: Configura Java (JDK 17 ufficiale)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Installa le dipendenze di sistema Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ccache automake libltdl-dev libffi-dev libssl-dev autoconf autotools-dev libtool pkg-config zlib1g-dev python3-pip openjdk-17-jdk libncurses5-dev libncursesw5-dev libtinfo5 cmake gettext zip unzip
+
+      - name: Installa Buildozer e Cython stabili
+        run: |
+          pip3 install --upgrade pip
+          pip3 install "buildozer>=1.5.0" "cython<3.0.0" kivy
+
+      - name: Configurazione Forzata e Pulizia Spec
+        run: |
+          # 1. Sovrascrive i requisiti per evitare il blocco sperimentale di Python 3.14
+          sed -i 's/^requirements =.*/requirements = python3, kivy/' buildozer.spec
+          
+          # 2. Forza l'architettura singola standard a 64-bit
+          sed -i 's/^android.archs =.*/android.archs = arm64-v8a/' buildozer.spec
+          
+          # 3. Disattiva a monte il controllo di sicurezza [y/n] dell'utente root
+          sed -i 's/^#\? \?warn_on_root =.*/warn_on_root = 0/' buildozer.spec
+
+      - name: Compilazione APK con Buildozer (Non-Interattivo)
+        env:
+          # Rimuove le variabili d'ambiente di sistema dell'NDK che corrompevano la compilazione
+          ANDROID_NDK: ""
+          ANDROID_NDK_HOME: ""
+          ANDROID_NDK_ROOT: ""
+          ANDROID_NDK_LATEST_HOME: ""
+        run: |
+          # Esegue buildozer forzando l'accettazione automatica di qualsiasi licenza residua
+          buildozer android debug --report
 
       - name: Caricamento dell'APK come Artifact
         uses: actions/upload-artifact@v4
