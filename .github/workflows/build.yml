@@ -1,4 +1,4 @@
-name: Build Android APK (Metodo Kivy)
+name: Build Android APK (Soluzione Corretta)
 
 on:
   push:
@@ -15,11 +15,11 @@ jobs:
       - name: Checkout del codice
         uses: actions/checkout@v4
 
-      - name: Compilazione APK con Buildozer Action
-        uses: kivy/action-android-buildozer@v1
+      - name: Compilazione APK con Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
         with:
-          buildozer_version: 'stable'
           command: buildozer android debug
+          buildozer_version: stable
 
       - name: Caricamento dell'APK come Artifact
         uses: actions/upload-artifact@v4
