@@ -38,7 +38,7 @@ version = 0.1
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
 # (In requirements metti python3 generico senza specificare la versione ==3.11.5)
-requirements = python3==3.11.9,kivy,cython,pyjnius
+requirements = python3==3.11.9, hostpython3==3.11.9, kivy, cython, pyjnius
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
 # requirements.source.kivy = ../../kivy
