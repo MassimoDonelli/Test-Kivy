@@ -1,4 +1,4 @@
-name: Build Android APK (Docker Fix)
+name: Build Android APK (Docker Final Fix)
 
 on:
   push:
@@ -17,18 +17,18 @@ jobs:
 
       - name: Fix permessi per la cartella di lavoro
         run: |
-          # Cambia i permessi della cartella di GitHub per evitare blocchi nel container
           chmod -R 777 ${{ github.workspace }}
 
       - name: Compilazione APK dentro Container Docker Ufficiale
         run: |
-          # Avviamo il container passando l'utente 1000 (l'utente standard 'user' di Kivy)
-          # in modo da non far scattare il blocco di sicurezza di root
+          # Usiamo --entrypoint per saltare lo script interno difettoso
+          # e inseriamo la variabile d'ambiente che disattiva il controllo di root di Buildozer
           docker run --rm \
-            -u 1000:1000 \
-            -v ${{ github.workspace }}:/home/user/hostcwd \
+            --entrypoint "" \
+            -v ${{ github.workspace }}:/home/buildozer/src \
+            -e BUILDOZER_ALLOW_KIVY_CONTAINER_ROOT=1 \
             kivy/buildozer:latest \
-            android debug
+            buildozer android debug
 
       - name: Caricamento dell'APK come Artifact
         uses: actions/upload-artifact@v4
