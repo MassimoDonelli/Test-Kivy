@@ -1,42 +1,49 @@
-name: CI
+name: Build Android APK
+
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04  # Usiamo una versione stabile per Buildozer
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout del codice
+        uses: actions/checkout@v4
 
-      # used to cache dependencies with a timeout
-      - name: Get Date
-        id: get-date
+      - name: Configura Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Installa le dipendenze di sistema e Buildozer
         run: |
-          echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
-        shell: bash
+          sudo apt-get update
+          sudo apt-get install -y ccache automake libltdl-dev libffi-dev libssl-dev autoconf autotools-dev libtool pkg-config zlib1g-dev python3-pip
+          pip3 install --upgrade pip
+          pip3 install buildozer cython git+https://github.com
 
-      - name: Cache Buildozer global directory
-        uses: actions/cache@v2
+      - name: Gestione Cache (Ottimizza i build successivi)
+        uses: actions/cache@v4  # Versione v4 aggiornata
         with:
-          path: .buildozer_global
-          key: buildozer-global-${{ hashFiles('buildozer.spec') }} # Replace with your path
+          path: |
+            ~/.ccache
+            ~/.buildozer
+          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
+          restore-keys: |
+            ${{ runner.os }}-buildozer-
 
-      - uses: actions/cache@v2
-        with:
-          path: .buildozer
-          key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
+      - name: Compilazione APK con Buildozer
+        run: |
+          # Accetta automaticamente le licenze Android e avvia il build
+          yes | buildozer android debug
 
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
+      - name: Caricamento dell'APK come Artifact
+        uses: actions/upload-artifact@v4  # Versione v4 aggiornata
         with:
-          command: buildozer android debug
-          buildozer_version: master
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: package
-          path: ${{ steps.buildozer.outputs.filename }}
+          name: pacchetto-apk
+          path: bin/*.apk
