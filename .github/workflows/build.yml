@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android APK (Docker)
 
 on:
   push:
@@ -9,44 +9,19 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout del codice
         uses: actions/checkout@v4
 
-      - name: Configura Python di sistema
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Configura Java (JDK 17)
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Installa le dipendenze di sistema necessarie
+      - name: Compilazione APK dentro Container Docker Ufficiale
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ccache automake libltdl-dev libffi-dev libssl-dev autoconf autotools-dev libtool pkg-config zlib1g-dev python3-pip openjdk-17-jdk libncurses5-dev libncursesw5-dev libtinfo5 cmake gettext zip unzip
+          docker run --rm \
+            -v ${{ github.workspace }}:/home/buildozer/src \
+            kivy/buildozer:latest \
+            android debug
 
-      - name: Installa Buildozer e Cython
-        run: |
-          pip3 install --upgrade pip
-          pip3 install "buildozer>=1.5.0" "cython<3.0.0" kivy
-
-      - name: Compilazione APK con Buildozer
-        env:
-          # Rimuove l'NDK di sistema di GitHub per non corrompere la compilazione
-          ANDROID_NDK: ""
-          ANDROID_NDK_HOME: ""
-          ANDROID_NDK_ROOT: ""
-          ANDROID_NDK_LATEST_HOME: ""
-        run: |
-          # Avvia Buildozer dicendogli esplicitamente di accettare le licenze in modo nativo
-          buildozer android debug --report
-          
       - name: Caricamento dell'APK come Artifact
         uses: actions/upload-artifact@v4
         with:
