@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04  # Usiamo una versione stabile per Buildozer
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout del codice
@@ -25,10 +25,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ccache automake libltdl-dev libffi-dev libssl-dev autoconf autotools-dev libtool pkg-config zlib1g-dev python3-pip
           pip3 install --upgrade pip
-          pip3 install buildozer cython git+https://github.com
+          pip3 install buildozer cython kivy
 
       - name: Gestione Cache (Ottimizza i build successivi)
-        uses: actions/cache@v4  # Versione v4 aggiornata
+        uses: actions/cache@v4
         with:
           path: |
             ~/.ccache
@@ -39,11 +39,10 @@ jobs:
 
       - name: Compilazione APK con Buildozer
         run: |
-          # Accetta automaticamente le licenze Android e avvia il build
           yes | buildozer android debug
 
       - name: Caricamento dell'APK come Artifact
-        uses: actions/upload-artifact@v4  # Versione v4 aggiornata
+        uses: actions/upload-artifact@v4
         with:
           name: pacchetto-apk
           path: bin/*.apk
