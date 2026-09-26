@@ -51,9 +51,9 @@ jobs:
         env:
           # Rimuove le variabili d'ambiente di sistema dell'NDK che corrompevano la compilazione
           ANDROID_NDK: ""
-          ANDROID_NDK_HOME: ""
+          ANDROID_NDK_HOME: /usr/local/lib/android/sdk
           ANDROID_NDK_ROOT: ""
-          ANDROID_NDK_LATEST_HOME: ""
+          ANDROID_NDK_LATEST_HOME: /usr/local/lib/android/sdk/ndk-bundle
         run: |
           # Esegue buildozer forzando l'accettazione automatica di qualsiasi licenza residua
           buildozer android debug --report
