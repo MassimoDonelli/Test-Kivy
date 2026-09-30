@@ -24,8 +24,8 @@ class MyApp(App):
         btn1 = Button(
             text='Apri la porta', 
             size_hint=(None,None),
-            size=(300,150),
-            #pos_hint={'center_x': 0.5, 'center_y': 0.5},        # .. Questo lo posizina al centro ..
+            size=(dp(300),dp(150)),
+            pos_hint={'center_x': 0.5, 'center_y': 0.3},        # .. Questo lo posizina al centro ..
             pos=(100,450),
             font_size=20,
             background_color=(0.2, 0.6, 0.8, 1))
@@ -34,9 +34,9 @@ class MyApp(App):
         btn2 = Button(
                     text ='Chiudi la porta', 
                     size_hint=(None,None),
-                    size=(300,150),
-                    #pos_hint={'center_x': 0.5, 'center_y': 0.5},        # .. Questo lo posizina al centro ..
-                    pos=(100,275),
+                    size=(dp(300),dp(150)),
+                    pos_hint={'center_x': 0.5, 'center_y': 0.35},        # .. Questo lo posizina al centro ..
+                    #pos=(100,275),
                     font_size=20,
                     background_color=(0.2, 0.6, 0.8, 1))
         btn2.bind(on_press=self.chiudi_la_porta)
@@ -44,9 +44,9 @@ class MyApp(App):
         btn3 = Button(
                             text ='Exit', 
                             size_hint=(None,None),
-                            size=(300,150),
-                            #pos_hint={'center_x': 0.5, 'center_y': 0.5},        # .. Questo lo posizina al centro ..
-                            pos=(100,100),
+                            size=(dp(300),dp(150)),
+                            pos_hint={'center_x': 0.5, 'center_y': 0.4},        # .. Questo lo posizina al centro ..
+                            #pos=(100,100),
                             font_size=20,
                             background_color=(0.2, 0.6, 0.8, 1))
         btn3.bind(on_press=self.esci)
