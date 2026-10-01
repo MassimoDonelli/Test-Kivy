@@ -1,69 +1,84 @@
-# .. Multi Bottone ..
 from kivy.app import App
-from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.floatlayout import FloatLayout
-from kivy.core.window import Window
-from kivy.config import Config
+from kivy.uix.textinput import TextInput
+from kivy.uix.button import Button
+from kivy.uix.label import Label
 
-# .. Blocca resize ..
-Config.set('graphics','resizable','False')
-# .. Imposta il colore di sfondo della finestra (es. bianco) ..
-Window.clearcolor = (1, 1, 1, 1)
-Window.size = (250,350)
-Window.resizable = 'False'
+class InterfacciaApp(BoxLayout):
+    def __init__(self, **kwargs):
+        super(InterfacciaApp, self).__init__(**kwargs)
+        
+        # Imposta l'orientamento verticale e aggiunge un po' di spaziatura esterna (padding) e interna (spacing)
+        self.orientation = 'vertical'
+        self.padding = 30
+        self.spacing = 45
 
-class MyApp(App):
-    def build(self):
-        self.title = "Apriporta"
-        #self.theme_cls.theme_style = "Light" # o "Dark"
-        #self.theme_cls.primary_palette = "Red"
-        # Crea un layout
-        layout = FloatLayout()
-        # Crea il bottone e assegna una funzione all'evento on_press
-        btn1 = Button(
-            text='Apri la porta', 
-            size_hint=(None,None),
-            size=(dp(300),dp(150)),
-            pos_hint={'center_x': 0.5, 'center_y': 0.3},        # .. Questo lo posizina al centro ..
-            pos=(100,450),
+        # 1. Casella di testo (Label) per visualizzare l'output o le istruzioni
+        self.scatola_testo = Label(
+            text="Il testo inserito comparirà qui", 
             font_size=20,
-            background_color=(0.2, 0.6, 0.8, 1))
-        btn1.bind(on_press=self.apri_la_porta)
-        #
-        btn2 = Button(
-                    text ='Chiudi la porta', 
-                    size_hint=(None,None),
-                    size=(dp(300),dp(150)),
-                    pos_hint={'center_x': 0.5, 'center_y': 0.35},        # .. Questo lo posizina al centro ..
-                    #pos=(100,275),
-                    font_size=20,
-                    background_color=(0.2, 0.6, 0.8, 1))
-        btn2.bind(on_press=self.chiudi_la_porta)
-        #
-        btn3 = Button(
-                            text ='Exit', 
-                            size_hint=(None,None),
-                            size=(dp(300),dp(150)),
-                            pos_hint={'center_x': 0.5, 'center_y': 0.4},        # .. Questo lo posizina al centro ..
-                            #pos=(100,100),
-                            font_size=20,
-                            background_color=(0.2, 0.6, 0.8, 1))
-        btn3.bind(on_press=self.esci)
-        # .. Aggiunge i bottoni al layout ..
-        layout.add_widget(btn1)
-        layout.add_widget(btn2)
-        layout.add_widget(btn3)
-        return layout
-    # .. Definisco le funzioni dei bottoni ..
-    def apri_la_porta(btn1, instance):
-        print('La porta è stata aperta!')
-    def chiudi_la_porta(btn2, instance):
-        print('La porta è stata chiusa!')
-    def esci(btn3, instance):
-        App.get_running_app().stop()
-      
+            size_hint_y=0.4 # Occupa il 40% dello spazio verticale
+        )
+        self.add_widget(self.scatola_testo)
 
+        # 2. Input di testo (TextInput) a riga singola per l'inserimento dati
+        self.input_utente = TextInput(
+            hint_text="Scrivi qualcosa qui...", 
+            multiline=False, # Disabilita il vai a capo con l'Invio
+            size_hint_x=0.1, # Occupa il 30% dello spazio verticale
+            size_hint_y=0.3 # Occupa il 30% dello spazio verticale           
+        )
+        self.add_widget(self.input_utente)
+
+        # 2.2 Input di testo 2 (TextInput) a riga singola per l'inserimento dati
+        self.input_utente2 = TextInput(
+                    hint_text="Scrivi qualcosa qui...", 
+                    multiline=False, # Disabilita il vai a capo con l'Invio
+                    size_hint_x=0.1, # Occupa il 30% dello spazio verticale
+                    size_hint_y=0.3 # Occupa il 30% dello spazio verticale           
+                )
+        self.add_widget(self.input_utente2)
+
+        # 3. Pulsante (Button) per confermare l'azione
+        self.pulsante_invia = Button(
+            text="Invia Testo", 
+            font_size=18,
+            background_color=(0.2, 0.6, 1, 1), # Colore azzurro
+            size_hint_y=0.3 # Occupa il 30% dello spazio verticale
+        )
+        # Collega il clic del pulsante alla funzione 'aggiorna_testo'
+        self.pulsante_invia.bind(on_press=self.aggiorna_testo)
+        self.add_widget(self.pulsante_invia)
+
+        # 3. Pulsante (Button) per confermare l'azione
+        self.pulsante_invia = Button(
+            text="Nuovo Bottone", 
+            font_size=18,
+            background_color=(0.2, 0.6, 1, 1), # Colore azzurro
+            size_hint_y=0.3 # Occupa il 30% dello spazio verticale
+        )
+        # Collega il clic del pulsante alla funzione 'aggiorna_testo'
+        self.pulsante_invia.bind(on_press=self.aggiorna_testo)
+        self.add_widget(self.pulsante_invia)
+
+
+    def aggiorna_testo(self, istanza):
+        # Legge il contenuto inserito nell'input di testo
+        testo_recuperato = self.input_utente.text
+        
+        if testo_recuperato.strip():
+            # Aggiorna la casella di testo (Label) principale
+            self.scatola_testo.text = f"Hai scritto: {testo_recuperato}"
+            # Svuota il campo di input dopo averlo inviato
+            self.input_utente.text = ""
+        else:
+            self.scatola_testo.text = "Per favore, inserisci del testo valido!"
+
+class EsempioKivyApp(App):
+    def build(self):
+        # Restituisce il layout principale creato sopra
+        return InterfacciaApp()
 
 if __name__ == '__main__':
-    MyApp().run()
+    # Avvia l'applicazione Kivy
+    EsempioKivyApp().run()
