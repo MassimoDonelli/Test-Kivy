@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime, date
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
@@ -17,9 +17,9 @@ class InterfacciaApp(BoxLayout):
         # 1. Griglia che conterrà i 6 blocchi
         self.griglia_input = GridLayout(cols=2, rows=3, spacing=15, size_hint_y=0.3)
         
-        # Inseriti valori di default validi per evitare crash immediati al click di Calcola
-        self.blocco1, self.input1 = self.crea_campo_descrittivo("Data Acquisto:", "01/01/24")
-        self.blocco2, self.input2 = self.crea_campo_descrittivo("Data Vendita:", "01/01/26")
+        # Valori di default validi (GG/MM/AA)
+        self.blocco1, self.input1 = self.crea_campo_descrittivo("Data Acquisto (GG/MM/AA):", "01/01/24")
+        self.blocco2, self.input2 = self.crea_campo_descrittivo("Data Vendita (GG/MM/AA):", "01/01/26")
         self.blocco3, self.input3 = self.crea_campo_descrittivo("Prezzo Acquisto %:", "100")
         self.blocco4, self.input4 = self.crea_campo_descrittivo("Rendimento Lordo %:", "4.5")
         self.blocco5, self.input5 = self.crea_campo_descrittivo("Capitale Investito Euro:", "10000")
@@ -69,30 +69,22 @@ class InterfacciaApp(BoxLayout):
             DATA_ACQUISTO = self.input1.text.strip()
             DATA_VENDITA = self.input2.text.strip()
             PREZZO_ACQUISTO = float(self.input3.text)
-            CLA = float(self.input4.text) / 100  # Convertito in decimale (es: 4.5% -> 0.045)
+            CLA = float(self.input4.text) / 100  
             CAPITALE_INVESTITO = float(self.input5.text)
-            
-            # CORRETTO: Cambiato da input5 a input6 per leggere i mesi delle rate
             PAGAMENTO_RATE = int(self.input6.text)  
             
-            # Gestione dinamica dell'anno a 2 o 4 cifre
-            d1_split = DATA_ACQUISTO.split("/")
-            anno1 = int(d1_split[2])
-            if anno1 < 100: anno1 += 2000
-            D1 = date(anno1, int(d1_split[1]), int(d1_split[0]))
-            
-            d2_split = DATA_VENDITA.split('/')
-            anno2 = int(d2_split[2])
-            if anno2 < 100: anno2 += 2000
-            D2 = date(anno2, int(d2_split[1]), int(d2_split[0]))
+            # Conversione sicura stringa -> oggetto date 
+            D1 = datetime.strptime(DATA_ACQUISTO, "%d/%m/%y").date()
+            D2 = datetime.strptime(DATA_VENDITA, "%d/%m/%y").date()
             
             # Calcoli finanziari
             NQ = int(CAPITALE_INVESTITO / PREZZO_ACQUISTO)
-            GCC = round((VR - PREZZO_ACQUISTO) * NQ, 2)                
+            GCC = round((VR - PREZZO_ACQUISTO) * NQ, 2)    
             VN = round(VR * NQ, 2)
             
-            # Chiamata a Durata_anni (Eseguita una sola volta)
-            NA, ANNI, MESI, GIORNI = self.Durata_anni(D1, D2)            
+            # Calcolo durata
+            NA, ANNI, MESI, GIORNI = self.Durata_anni(D1, D2)
+            
             GTC = round(VN * CLA * NA, 2)
             
             if GCC > 0:
@@ -101,17 +93,22 @@ class InterfacciaApp(BoxLayout):
                 R = round(GCC + GTC * (1 - A), 2)
             
             RP = round((R / CAPITALE_INVESTITO) * 100, 3)
-            RPMA = round(RP / NA, 3) if NA > 0 else 0.0 
-            N_RATE = self.CalcolaRate(D1,D2,PAGAMENTO_RATE,R)   
+            RPMA = round(RP / NA, 3) if NA > 0 else 0.0
+            
+            # Calcolo delle rate testuali
+            testo_rate, num_rate = self.CalcolaRate(D1, D2, PAGAMENTO_RATE, R)
+            
             risultato = (
+                f"--- RIEPILOGO FINANZIARIO ---\n"
                 f"- Guadagno Conto Capitale: {GCC} Euro\n"
                 f"- Valore Nominale: {VN} Euro\n"
                 f"- Durata Anni Totale: {NA:.4f} (Anni: {ANNI}, Mesi: {MESI}, Giorni: {GIORNI})\n"
                 f"- Guadagno Totale Cedole: {GTC} Euro\n"
-                f"- Rendimento netto: {R} Euro\n"
-                f"- Rendimento totale: {RP} %\n"
-                f"- Rendimento medio annuo: {RPMA} %\n"
-                f"- Numero rate: {N_RATE} %\n"
+                f"- Rendimento Netto Complessivo: {R} Euro\n"
+                f"- Rendimento Totale: {RP} %\n"
+                f"- Rendimento Medio Annuo: {RPMA} %\n\n"
+                f"--- SCADENZIARIO CEDOLE (Totale Rate: {num_rate}) ---\n"
+                f"{testo_rate}"
             )
             self.pannello_scrittura.text = risultato
             
@@ -142,16 +139,17 @@ class InterfacciaApp(BoxLayout):
         totale_anni = round(anni + mesi/12 + giorni/365, 4)  
         return totale_anni, anni, mesi, giorni
 
-
     def CalcolaRate(self, Data_acquisto, Data_vendita, Pag_Rate_Mesi, RendimentoNetto):
-        # CORRETTO: Aggiunto self. per chiamare il metodo della classe
         Totale_Anni, Anni, Mesi, Giorni = self.Durata_anni(Data_acquisto, Data_vendita)
-        
         NumRate = int((Anni * 12 + Mesi) / Pag_Rate_Mesi)
+        
         Anno = Data_acquisto.year
         Mese = Data_acquisto.month
+        # CORREZIONE: Usiamo il giorno reale di acquisto per calcolare la ricorrenza della cedola
+        giorno_cedola = Data_acquisto.day 
         
-        print("Numero Rate: ", NumRate)
+        stringa_output = ""
+        importo_rata = round(RendimentoNetto / NumRate, 2) if NumRate > 0 else 0.0
         
         for I_X_FOR in range(NumRate - 1):
             Mese += Pag_Rate_Mesi
@@ -159,23 +157,26 @@ class InterfacciaApp(BoxLayout):
                 Anno += 1
                 Mese -= 12
             
-            # Gestione del fine mese per evitare errori (es. 31 Giugno non esiste, diventa 30)
-            giorno_valido = Giorni
+            # Controllo di sicurezza per i mesi corti (es. se giorno_cedola è 31, a febbraio diventa 28 o 29)
+            giorno_valido = giorno_cedola
             while giorno_valido > 28:
                 try:
                     DUMMY_DATA = date(Anno, Mese, giorno_valido)
                     break
                 except ValueError:
-                    giorno_valido -= 1  # Scala indietro al giorno valido più vicino
+                    giorno_valido -= 1
             else:
                 DUMMY_DATA = date(Anno, Mese, giorno_valido)
-                
-            print(f"Rata {I_X_FOR + 1}: {DUMMY_DATA} - {round(RendimentoNetto / NumRate, 2)} Euro")  
             
-        print(f"Rata {NumRate}: {Data_vendita} - {round(RendimentoNetto / NumRate, 2)} Euro")
-        return NumRate
+            data_formattata = DUMMY_DATA.strftime("%d/%m/%Y")
+            stringa_output += f"Rata {I_X_FOR + 1}: {data_formattata} -> {importo_rata} Euro\n"
+            
+        if NumRate > 0:
+            data_vendita_formattata = Data_vendita.strftime("%d/%m/%Y")
+            stringa_output += f"Rata {NumRate}: {data_vendita_formattata} -> {importo_rata} Euro\n"
+        
+        return stringa_output, NumRate
 
-    
 class MyApp(App):
     def build(self):
         self.title = 'Calcola Rendimento BTP'
