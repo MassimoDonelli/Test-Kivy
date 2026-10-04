@@ -1,3 +1,4 @@
+from kivy.uix.scrollview import ScrollView
 from datetime import datetime, date
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
@@ -18,8 +19,8 @@ class InterfacciaApp(BoxLayout):
         self.griglia_input = GridLayout(cols=2, rows=3, spacing=15, size_hint_y=0.3)
         
         # Valori di default validi (GG/MM/AA)
-        self.blocco1, self.input1 = self.crea_campo_descrittivo("Data Acquisto (GG/MM/AA):", "01/01/24")
-        self.blocco2, self.input2 = self.crea_campo_descrittivo("Data Vendita (GG/MM/AA):", "01/01/26")
+        self.blocco1, self.input1 = self.crea_campo_descrittivo("Data Acquisto: ", "01/01/24")
+        self.blocco2, self.input2 = self.crea_campo_descrittivo("Data Vendita: ", "01/01/26")
         self.blocco3, self.input3 = self.crea_campo_descrittivo("Prezzo Acquisto %:", "100")
         self.blocco4, self.input4 = self.crea_campo_descrittivo("Rendimento Lordo %:", "4.5")
         self.blocco5, self.input5 = self.crea_campo_descrittivo("Capitale Investito Euro:", "10000")
@@ -40,12 +41,22 @@ class InterfacciaApp(BoxLayout):
         self.add_widget(self.bottone_calcola)
 
         # 3. Pannello di scrittura / Output
-        self.pannello_scrittura = TextInput(
-            hint_text='I dati elaborati appariranno qui...',
-            readonly=True, 
-            size_hint_y=0.43
+        self.scroll_view = ScrollView(size_hint_y=0.43)
+        
+        self.pannello_scrittura = Label(
+            text='I dati elaborati appariranno qui...',
+            size_hint_y=None,        # Fondamentale per far funzionare lo scroll
+            text_size=(None, None),  # Permette il calcolo dinamico delle dimensioni
+            halign='left',
+            valign='top',
+            padding=(10, 10)
         )
-        self.add_widget(self.pannello_scrittura)
+        # Questo comando adatta l'altezza della Label in base alla lunghezza del testo inserito
+        self.pannello_scrittura.bind(texture_size=self.pannello_scrittura.setter('size'))
+        
+        # Aggiungiamo la Label dentro la ScrollView, e la ScrollView all'interfaccia
+        self.scroll_view.add_widget(self.pannello_scrittura)
+        self.add_widget(self.scroll_view)
 
         # 4. Bottone Uscita
         self.bottone_esci = Button(text='Esci', size_hint_y=0.12, background_color=(0.2, 0.6, 1, 1))
