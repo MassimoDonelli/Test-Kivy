@@ -49,7 +49,7 @@ class InterfacciaApp(BoxLayout):
             #text_size=(None, None),  # Permette il calcolo dinamico delle dimensioni
             halign='left',
             valign='top',
-            padding=(10, 10)
+            padding=(35, 35)
         )
         # Questo comando adatta l'altezza della Label in base alla lunghezza del testo inserito
         #self.pannello_scrittura.bind(texture_size=self.pannello_scrittura.setter('size'))
