@@ -51,18 +51,12 @@ class InterfacciaApp(BoxLayout):
             valign='top',
             padding=(35, 35)
         )
-        # Questo comando adatta l'altezza della Label in base alla lunghezza del testo inserito
-        #self.pannello_scrittura.bind(texture_size=self.pannello_scrittura.setter('size'))
-        # self.pannello_scrittura.bind(width=lambda istanza, valore: setattr(self.pannello_scrittura, 'text_size', (valore, None)))
 
-        # 2. CORRETTO: Prende solo l'altezza (indice 1 della tupla) per aggiornare l'altezza della Label
-        self.pannello_scrittura.bind(texture_size=lambda istanza, t_size: setattr(istanza, 'height', t_size[1]))
-     
-
+        # 1. Forza il testo ad andare a capo in base alla larghezza del Label
+        self.pannello_scrittura.bind(width=lambda label, value: setattr(label, 'text_size', (value, None)))
         
-        # Mantiene lo scroll verticale funzionante adattando l'altezza al nuovo testo evidenziato
-        self.pannello_scrittura.bind(texture_size=lambda istanza, valore: setattr(self.pannello_scrittura, 'height', valore[1]))
-        
+        # 2. Aggiorna l'altezza del Label in base alla quantità di testo presente
+        self.pannello_scrittura.bind(texture_size=lambda label, value: setattr(label, 'height', value[1]))   
         
         # Aggiungiamo la Label dentro la ScrollView, e la ScrollView all'interfaccia
         self.scroll_view.add_widget(self.pannello_scrittura)
