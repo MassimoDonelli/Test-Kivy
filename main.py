@@ -120,16 +120,16 @@ class InterfacciaApp(BoxLayout):
             testo_rate, num_rate = self.CalcolaRate(D1, D2, PAGAMENTO_RATE, R)
             
             risultato = (
-                f"--- RIEPILOGO FINANZIARIO ---\n"
-                f"- Guadagno Conto Capitale: {GCC} Euro\n"
-                f"- Valore Nominale: {VN} Euro\n"
-                f"- Durata Anni Totale: {NA:.4f} (Anni: {ANNI}, Mesi: {MESI}, Giorni: {GIORNI})\n"
-                f"- Guadagno Totale Cedole: {GTC} Euro\n"
-                f"- Rendimento Netto Complessivo: {R} Euro\n"
-                f"- Rendimento Totale: {RP} %\n"
-                f"- Rendimento Medio Annuo: {RPMA} %\n\n"
-                f"--- SCADENZIARIO CEDOLE (Totale Rate: {num_rate}) ---\n"
-                f"{testo_rate}"
+                f"    --- RIEPILOGO FINANZIARIO ---\n"
+                f"    - Guadagno Conto Capitale: {GCC} Euro\n"
+                f"    - Valore Nominale: {VN} Euro\n"
+                f"    - Durata Anni Totale: {NA:.4f} (Anni: {ANNI}, Mesi: {MESI}, Giorni: {GIORNI})\n"
+                f"    - Guadagno Totale Cedole: {GTC} Euro\n"
+                f"    - Rendimento Netto Complessivo: {R} Euro\n"
+                f"    - Rendimento Totale: {RP} %\n"
+                f"    - Rendimento Medio Annuo: {RPMA} %\n\n"
+                f"    --- SCADENZIARIO CEDOLE (Totale Rate: {num_rate}) ---\n"
+                f"    {testo_rate}"
             )
             self.pannello_scrittura.text = risultato
             
