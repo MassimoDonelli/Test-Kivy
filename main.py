@@ -46,14 +46,19 @@ class InterfacciaApp(BoxLayout):
         self.pannello_scrittura = Label(
             text='I dati elaborati appariranno qui...',
             size_hint_y=None,        # Fondamentale per far funzionare lo scroll
-            text_size=(None, None),  # Permette il calcolo dinamico delle dimensioni
+            #text_size=(None, None),  # Permette il calcolo dinamico delle dimensioni
             halign='left',
             valign='top',
             padding=(10, 10)
         )
         # Questo comando adatta l'altezza della Label in base alla lunghezza del testo inserito
-        self.pannello_scrittura.bind(texture_size=self.pannello_scrittura.setter('size'))
+        #self.pannello_scrittura.bind(texture_size=self.pannello_scrittura.setter('size'))
         # self.pannello_scrittura.bind(width=lambda istanza, valore: setattr(self.pannello_scrittura, 'text_size', (valore, None)))
+
+        # 2. CORRETTO: Prende solo l'altezza (indice 1 della tupla) per aggiornare l'altezza della Label
+        self.pannello_scrittura.bind(texture_size=lambda istanza, t_size: setattr(istanza, 'height', t_size[1]))
+     
+
         
         # Mantiene lo scroll verticale funzionante adattando l'altezza al nuovo testo evidenziato
         self.pannello_scrittura.bind(texture_size=lambda istanza, valore: setattr(self.pannello_scrittura, 'height', valore[1]))
